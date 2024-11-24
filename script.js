@@ -156,23 +156,21 @@ function updateTopDoctors() {
     doctorsRef.on("value", (snapshot) => {
         const doctors = snapshot.val() || {};
 
-        // ترتيب الدكاترة حسب متوسط التقييم ثم عدد التقييمات
         const sortedDoctors = Object.values(doctors)
             .sort((a, b) => {
                 if (b.average === a.average) {
-                    return b.count - a.count; // إذا كانت المتوسطات متساوية، استخدم عدد التقييمات
+                    return b.count - a.count;
                 }
-                return b.average - a.average; // ترتيب تنازلي حسب المتوسط
+                return b.average - a.average;
             })
-            .slice(0, 3); // عرض أفضل 3 دكاترة
+            .slice(0, 3);
 
-        // إعادة تعيين القائمة
+
         topDoctorsList.innerHTML = "";
 
-        // إضافة الدكاترة إلى القائمة
         sortedDoctors.forEach((doctor) => {
             const li = document.createElement("li");
-            li.innerHTML = `<span class="star">★</span> ${doctor.name} - متوسط: ${doctor.average.toFixed(1)} (${doctor.count} تقييم)`;
+            li.innerHTML = `<span class="star">★</span> ${doctor.name}`;
             topDoctorsList.appendChild(li);
         });
     });
