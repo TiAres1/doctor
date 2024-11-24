@@ -92,6 +92,7 @@ submitButton.addEventListener("click", () => {
 
     const normalizedName = normalizeText(doctorName);
 
+    // التحقق إذا قام المستخدم نفسه بتقييم الدكتور مسبقًا
     if (hasUserRatedDoctor(normalizedName)) {
         showMessage(errorMsg, "لقد قمت بتقييم هذا الدكتور سابقًا!");
         return;
@@ -102,6 +103,7 @@ submitButton.addEventListener("click", () => {
             const doctorData = snapshot.val();
 
             if (doctorData) {
+                // إذا كان الدكتور موجودًا، قم بتحديث البيانات
                 const newCount = doctorData.count + 1;
                 const newTotal = doctorData.total + currentRating;
                 const newAverage = newTotal / newCount;
@@ -112,6 +114,7 @@ submitButton.addEventListener("click", () => {
                     average: newAverage,
                 });
             } else {
+                // إذا كان الدكتور جديدًا، أضف البيانات
                 doctorsRef.child(normalizedName).set({
                     name: doctorName,
                     count: 1,
@@ -120,6 +123,7 @@ submitButton.addEventListener("click", () => {
                 });
             }
 
+            // تسجيل الدكتور في قائمة التقييمات الخاصة بالمستخدم
             saveUserRatedDoctor(normalizedName);
 
             showMessage(successMsg, "تم التقييم بنجاح!");
@@ -135,18 +139,19 @@ submitButton.addEventListener("click", () => {
     }
 });
 
+
 function updateTopDoctors() {
     doctorsRef.on("value", (snapshot) => {
         const doctors = snapshot.val() || {};
         const sortedDoctors = Object.values(doctors)
-            .sort((a, b) => b.average - a.average)
+            .sort((a, b) => b.average - a.average) // ترتيب تنازلي حسب المتوسط
             .reverse()
-            .slice(0, 3);
+            .slice(0, 3); // عرض أفضل 3 دكاترة
 
         topDoctorsList.innerHTML = "";
         sortedDoctors.forEach((doctor) => {
             const li = document.createElement("li");
-            li.innerHTML = `<span class="star">★</span> ${doctor.name}`;
+            li.innerHTML = `<span class="star">★</span> ${doctor.name} - متوسط: ${doctor.average.toFixed(1)} (${doctor.count} تقييم)`;
             topDoctorsList.appendChild(li);
         });
     });
