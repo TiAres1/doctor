@@ -30,12 +30,14 @@ let currentRating = 0;
 // توحيد النصوص
 function normalizeText(text) {
     return text
-        .replace(/أ|إ|آ/g, "ا")
-        .replace(/ة/g, "ه")
-        .replace(/\s+/g, " ")
-        .trim()
-        .toLowerCase();
+        .replace(/أ|إ|آ/g, "ا") // استبدال جميع أنواع الهمزات بـ "ا"
+        .replace(/ة/g, "ه") // استبدال التاء المربوطة بـ "ه"
+        .replace(/[^a-zA-Z0-9\u0600-\u06FF\s]/g, "") // إزالة الأحرف المحظورة (., #, $, [, ])
+        .replace(/\s+/g, " ") // إزالة المسافات الزائدة
+        .trim() // إزالة المسافات في البداية والنهاية
+        .toLowerCase(); // تحويل النص إلى أحرف صغيرة
 }
+
 
 // عرض رسالة
 function showMessage(element, message) {
@@ -95,6 +97,7 @@ submitButton.addEventListener("click", () => {
         ? doctorNameInputValue
         : `د. ${doctorNameInputValue}`;
 
+    // تطبيع النص لجعله صالحًا كمسار في Firebase
     const normalizedName = normalizeText(doctorName);
 
     if (hasUserRatedDoctor(normalizedName)) {
