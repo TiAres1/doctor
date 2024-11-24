@@ -86,32 +86,55 @@ submitButton.addEventListener("click", () => {
     const doctorNameInputValue = doctorNameInput.value.trim();
     const arabicRegex = /^[\u0600-\u06FF\s]+$/;
 
+    // التحقق من أن الاسم باللغة العربية فقط
     if (!arabicRegex.test(doctorNameInputValue)) {
         showMessage(errorMsg, "الرجاء كتابة اسم الدكتور باللغة العربية فقط!");
         return;
     }
 
+    // إضافة "د." إذا لم تكن موجودة
     const doctorName = doctorNameInputValue.startsWith("د.")
         ? doctorNameInputValue
         : `د. ${doctorNameInputValue}`;
 
-    if (currentRating > 0) {
-        const normalizedName = normalizeText(doctorName);
+    // تنظيف النص ليصبح صالحًا كمسار
+    const normalizedName = normalizeText(doctorName);
 
-        // تحقق إذا كان الدكتور موجودًا بالفعل
-        doctorsRef.once("value", (snapshot) => {
-            const doctors = snapshot.val() || {};
-            if (doctors[normalizedName]) {
-                showMessage(errorMsg, "هذا الدكتور تم تقييمه بالفعل!");
-                return;
+    // التحقق إذا قام المستخدم بتقييم الدكتور مسبقًا
+    if (hasUserRatedDoctor(normalizedName)) {
+        showMessage(errorMsg, "لقد قمت بتقييم هذا الدكتور سابقًا!");
+        return;
+    }
+
+    if (currentRating > 0) {
+        doctorsRef.child(normalizedName).once("value", (snapshot) => {
+            const doctorData = snapshot.val();
+
+            if (doctorData) {
+                // إذا كان الدكتور موجودًا، قم بتحديث البيانات
+                const newCount = doctorData.count + 1;
+                const newTotal = doctorData.total + currentRating;
+                const newAverage = newTotal / newCount;
+
+                doctorsRef.child(normalizedName).update({
+                    count: newCount,
+                    total: newTotal,
+                    average: newAverage,
+                });
+            } else {
+                // إذا كان الدكتور جديدًا، أضف البيانات
+                doctorsRef.child(normalizedName).set({
+                    name: doctorName,
+                    count: 1,
+                    total: currentRating,
+                    average: currentRating,
+                });
             }
 
-            // إضافة الدكتور إلى قاعدة البيانات
-            doctorsRef.child(normalizedName).set({
-                name: doctorName,
-                rating: currentRating,
-            });
+            // تسجيل تقييم المستخدم محليًا
+            saveUserRatedDoctor(normalizedName);
 
+            // رسالة نجاح
             showMessage(successMsg, "تم التقييم بنجاح!");
             doctorNameInput.value = "";
             stars.forEach((star) => {
@@ -125,7 +148,18 @@ submitButton.addEventListener("click", () => {
     }
 });
 
-// تحديث قائمة أفضل الدكاترة
+function hasUserRatedDoctor(doctorName) {
+    const ratedDoctors = JSON.parse(localStorage.getItem("ratedDoctors")) || [];
+    return ratedDoctors.includes(doctorName);
+}
+
+function saveUserRatedDoctor(doctorName) {
+    const ratedDoctors = JSON.parse(localStorage.getItem("ratedDoctors")) || [];
+    ratedDoctors.push(doctorName);
+    localStorage.setItem("ratedDoctors", JSON.stringify(ratedDoctors));
+}
+
+
 function updateTopDoctors() {
     doctorsRef.on("value", (snapshot) => {
         const doctors = snapshot.val() || {};
@@ -143,5 +177,5 @@ function updateTopDoctors() {
     });
 }
 
-// تحديث القائمة عند بدء التشغيل
+
 updateTopDoctors();
