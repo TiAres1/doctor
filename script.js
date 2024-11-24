@@ -1,4 +1,3 @@
-// إعداد Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyA9lfQNMzI7-6P2GkskdJODE3yG-sVeAgg",
     authDomain: "doctor-e941b.firebaseapp.com",
@@ -13,11 +12,9 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 
-// مرجع قاعدة البيانات
 const database = firebase.database();
 const doctorsRef = database.ref("doctors");
 
-// عناصر الصفحة
 const stars = document.querySelectorAll(".star");
 const doctorNameInput = document.getElementById("doctor-name");
 const submitButton = document.getElementById("submit-btn");
@@ -27,17 +24,16 @@ const successMsg = document.getElementById("success-msg");
 
 let currentRating = 0;
 
-// توحيد النصوص
 function normalizeText(text) {
     return text
-        .replace(/أ|إ|آ/g, "ا")
-        .replace(/ة/g, "ه")
-        .replace(/\s+/g, " ")
-        .trim()
-        .toLowerCase();
+        .replace(/أ|إ|آ/g, "ا") // استبدال جميع أنواع الهمزات بـ "ا"
+        .replace(/ة/g, "ه") // استبدال التاء المربوطة بـ "ه"
+        .replace(/[^a-zA-Z0-9\u0600-\u06FF\s]/g, "") // إزالة الأحرف المحظورة مثل ., #, $, [, ]
+        .replace(/\s+/g, " ") // إزالة المسافات الزائدة
+        .trim() // إزالة المسافات الزائدة في البداية والنهاية
+        .toLowerCase(); // تحويل النص إلى أحرف صغيرة
 }
 
-// عرض رسالة
 function showMessage(element, message) {
     element.textContent = message;
     element.style.display = "block";
@@ -46,7 +42,6 @@ function showMessage(element, message) {
     }, 3000);
 }
 
-// تفعيل التقييم بالنجوم
 stars.forEach((star) => {
     star.addEventListener("click", () => {
         const starValue = parseInt(star.getAttribute("data-value"));
@@ -68,7 +63,6 @@ stars.forEach((star) => {
     });
 });
 
-// عند الضغط على زر الإرسال
 submitButton.addEventListener("click", () => {
     const doctorNameInputValue = doctorNameInput.value.trim();
     const arabicRegex = /^[\u0600-\u06FF\s]+$/;
@@ -112,7 +106,6 @@ submitButton.addEventListener("click", () => {
     }
 });
 
-// تحديث قائمة أفضل الدكاترة
 function updateTopDoctors() {
     doctorsRef.on("value", (snapshot) => {
         const doctors = snapshot.val() || {};
@@ -129,5 +122,4 @@ function updateTopDoctors() {
     });
 }
 
-// تحديث القائمة عند بدء التشغيل
 updateTopDoctors();
