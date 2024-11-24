@@ -37,7 +37,6 @@ function normalizeText(text) {
         .toLowerCase(); // تحويل النص إلى أحرف صغيرة
 }
 
-// عرض رسالة
 function showMessage(element, message) {
     element.textContent = message;
     element.style.display = "block";
@@ -46,20 +45,17 @@ function showMessage(element, message) {
     }, 3000);
 }
 
-// التحقق إذا قام المستخدم بتقييم الدكتور سابقًا
 function hasUserRatedDoctor(doctorName) {
     const ratedDoctors = JSON.parse(localStorage.getItem("ratedDoctors")) || [];
     return ratedDoctors.includes(doctorName);
 }
 
-// تسجيل تقييم المستخدم للدكتور
 function saveUserRatedDoctor(doctorName) {
     const ratedDoctors = JSON.parse(localStorage.getItem("ratedDoctors")) || [];
     ratedDoctors.push(doctorName);
     localStorage.setItem("ratedDoctors", JSON.stringify(ratedDoctors));
 }
 
-// تفعيل التقييم بالنجوم
 stars.forEach((star) => {
     star.addEventListener("click", () => {
         const starValue = parseInt(star.getAttribute("data-value"));
@@ -81,26 +77,21 @@ stars.forEach((star) => {
     });
 });
 
-// عند الضغط على زر الإرسال
 submitButton.addEventListener("click", () => {
     const doctorNameInputValue = doctorNameInput.value.trim();
     const arabicRegex = /^[\u0600-\u06FF\s]+$/;
 
-    // التحقق من أن الاسم باللغة العربية فقط
     if (!arabicRegex.test(doctorNameInputValue)) {
         showMessage(errorMsg, "الرجاء كتابة اسم الدكتور باللغة العربية فقط!");
         return;
     }
 
-    // إضافة "د." إذا لم تكن موجودة
     const doctorName = doctorNameInputValue.startsWith("د.")
         ? doctorNameInputValue
         : `د. ${doctorNameInputValue}`;
 
-    // تنظيف النص ليصبح صالحًا كمسار
     const normalizedName = normalizeText(doctorName);
 
-    // التحقق إذا قام المستخدم بتقييم الدكتور مسبقًا
     if (hasUserRatedDoctor(normalizedName)) {
         showMessage(errorMsg, "لقد قمت بتقييم هذا الدكتور سابقًا!");
         return;
@@ -111,7 +102,6 @@ submitButton.addEventListener("click", () => {
             const doctorData = snapshot.val();
 
             if (doctorData) {
-                // إذا كان الدكتور موجودًا، قم بتحديث البيانات
                 const newCount = doctorData.count + 1;
                 const newTotal = doctorData.total + currentRating;
                 const newAverage = newTotal / newCount;
@@ -122,7 +112,6 @@ submitButton.addEventListener("click", () => {
                     average: newAverage,
                 });
             } else {
-                // إذا كان الدكتور جديدًا، أضف البيانات
                 doctorsRef.child(normalizedName).set({
                     name: doctorName,
                     count: 1,
@@ -131,10 +120,8 @@ submitButton.addEventListener("click", () => {
                 });
             }
 
-            // تسجيل تقييم المستخدم محليًا
             saveUserRatedDoctor(normalizedName);
 
-            // رسالة نجاح
             showMessage(successMsg, "تم التقييم بنجاح!");
             doctorNameInput.value = "";
             stars.forEach((star) => {
@@ -147,18 +134,6 @@ submitButton.addEventListener("click", () => {
         showMessage(errorMsg, "الرجاء اختيار التقييم!");
     }
 });
-
-function hasUserRatedDoctor(doctorName) {
-    const ratedDoctors = JSON.parse(localStorage.getItem("ratedDoctors")) || [];
-    return ratedDoctors.includes(doctorName);
-}
-
-function saveUserRatedDoctor(doctorName) {
-    const ratedDoctors = JSON.parse(localStorage.getItem("ratedDoctors")) || [];
-    ratedDoctors.push(doctorName);
-    localStorage.setItem("ratedDoctors", JSON.stringify(ratedDoctors));
-}
-
 
 function updateTopDoctors() {
     doctorsRef.on("value", (snapshot) => {
