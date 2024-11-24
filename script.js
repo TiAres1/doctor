@@ -1,4 +1,3 @@
-// إعداد Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyA9lfQNMzI7-6P2GkskdJODE3yG-sVeAgg",
     authDomain: "doctor-e941b.firebaseapp.com",
@@ -10,14 +9,11 @@ const firebaseConfig = {
     measurementId: "G-6RY5P2T1CJ"
 };
 
-// تهيئة Firebase
 firebase.initializeApp(firebaseConfig);
 
-// مرجع قاعدة البيانات
 const database = firebase.database();
 const doctorsRef = database.ref("doctors");
 
-// عناصر الصفحة
 const stars = document.querySelectorAll(".star");
 const doctorNameInput = document.getElementById("doctor-name");
 const submitButton = document.getElementById("submit-btn");
@@ -77,6 +73,23 @@ stars.forEach((star) => {
     });
 });
 
+function syncLocalStorageWithFirebase() {
+    doctorsRef.once("value", (snapshot) => {
+        const firebaseDoctors = snapshot.val() || {};
+        const firebaseDoctorNames = Object.keys(firebaseDoctors);
+        const ratedDoctors = JSON.parse(localStorage.getItem("ratedDoctors")) || [];
+
+        const updatedRatedDoctors = ratedDoctors.filter((name) =>
+            firebaseDoctorNames.includes(name)
+        );
+
+        localStorage.setItem("ratedDoctors", JSON.stringify(updatedRatedDoctors));
+
+        console.log("تمت مزامنة LocalStorage مع Firebase:", updatedRatedDoctors);
+    });
+}
+
+
 submitButton.addEventListener("click", () => {
     const doctorNameInputValue = doctorNameInput.value.trim();
     const arabicRegex = /^[\u0600-\u06FF\s]+$/;
@@ -92,7 +105,8 @@ submitButton.addEventListener("click", () => {
 
     const normalizedName = normalizeText(doctorName);
 
-    // التحقق إذا قام المستخدم نفسه بتقييم الدكتور مسبقًا
+    syncLocalStorageWithFirebase();
+
     if (hasUserRatedDoctor(normalizedName)) {
         showMessage(errorMsg, "لقد قمت بتقييم هذا الدكتور سابقًا!");
         return;
@@ -103,7 +117,6 @@ submitButton.addEventListener("click", () => {
             const doctorData = snapshot.val();
 
             if (doctorData) {
-                // إذا كان الدكتور موجودًا، قم بتحديث البيانات
                 const newCount = doctorData.count + 1;
                 const newTotal = doctorData.total + currentRating;
                 const newAverage = newTotal / newCount;
@@ -114,7 +127,6 @@ submitButton.addEventListener("click", () => {
                     average: newAverage,
                 });
             } else {
-                // إذا كان الدكتور جديدًا، أضف البيانات
                 doctorsRef.child(normalizedName).set({
                     name: doctorName,
                     count: 1,
@@ -123,8 +135,9 @@ submitButton.addEventListener("click", () => {
                 });
             }
 
-            // تسجيل الدكتور في قائمة التقييمات الخاصة بالمستخدم
             saveUserRatedDoctor(normalizedName);
+
+            updateTopDoctors();
 
             showMessage(successMsg, "تم التقييم بنجاح!");
             doctorNameInput.value = "";
@@ -139,23 +152,24 @@ submitButton.addEventListener("click", () => {
     }
 });
 
-
 function updateTopDoctors() {
     doctorsRef.on("value", (snapshot) => {
         const doctors = snapshot.val() || {};
+
         const sortedDoctors = Object.values(doctors)
-            .sort((a, b) => b.average - a.average) // ترتيب تنازلي حسب المتوسط
-            // .reverse()
-            .slice(0, 3); // عرض أفضل 3 دكاترة
+            .sort((a, b) => b.average - a.average) 
+            .slice(0, 3); 
 
         topDoctorsList.innerHTML = "";
+
         sortedDoctors.forEach((doctor) => {
             const li = document.createElement("li");
-            li.innerHTML = `<span class="star">★</span> ${doctor.name} - متوسط: ${doctor.average.toFixed(1)} (${doctor.count} تقييم)`;
+            li.innerHTML = `<span class="star">★</span> ${doctor.name}`;
             topDoctorsList.appendChild(li);
         });
     });
 }
 
-
 updateTopDoctors();
+
+syncLocalStorageWithFirebase();
