@@ -31,12 +31,11 @@ function normalizeText(text) {
     return text
         .replace(/أ|إ|آ/g, "ا") // استبدال جميع أنواع الهمزات بـ "ا"
         .replace(/ة/g, "ه") // استبدال التاء المربوطة بـ "ه"
-        .replace(/[.#$[\]]/g, "") // إزالة الأحرف المحظورة: ., #, $, [, ]
+        .replace(/[^a-zA-Z0-9\u0600-\u06FF\s]/g, "") // إزالة الأحرف المحظورة مثل ., #, $, [, ]
         .replace(/\s+/g, " ") // إزالة المسافات الزائدة
-        .trim() // إزالة المسافات في البداية والنهاية
+        .trim() // إزالة المسافات الزائدة في البداية والنهاية
         .toLowerCase(); // تحويل النص إلى أحرف صغيرة
 }
-
 
 // عرض رسالة
 function showMessage(element, message) {
@@ -96,41 +95,22 @@ submitButton.addEventListener("click", () => {
         ? doctorNameInputValue
         : `د. ${doctorNameInputValue}`;
 
-    // تطبيع النص لجعله صالحًا كمسار في Firebase
-    const normalizedName = normalizeText(doctorName);
-
-    if (hasUserRatedDoctor(normalizedName)) {
-        showMessage(errorMsg, "لقد قمت بتقييم هذا الدكتور سابقًا!");
-        return;
-    }
-
     if (currentRating > 0) {
-        doctorsRef.child(normalizedName).once("value", (snapshot) => {
-            const doctorData = snapshot.val();
+        const normalizedName = normalizeText(doctorName);
 
-            if (doctorData) {
-                // إذا كان الدكتور موجودًا، قم بتحديث البيانات
-                const newCount = doctorData.count + 1;
-                const newTotal = doctorData.total + currentRating;
-                const newAverage = newTotal / newCount;
-
-                doctorsRef.child(normalizedName).update({
-                    count: newCount,
-                    total: newTotal,
-                    average: newAverage,
-                });
-            } else {
-                // إذا كان الدكتور جديدًا، أضف البيانات
-                doctorsRef.child(normalizedName).set({
-                    name: doctorName,
-                    count: 1,
-                    total: currentRating,
-                    average: currentRating,
-                });
+        // تحقق إذا كان الدكتور موجودًا بالفعل
+        doctorsRef.once("value", (snapshot) => {
+            const doctors = snapshot.val() || {};
+            if (doctors[normalizedName]) {
+                showMessage(errorMsg, "هذا الدكتور تم تقييمه بالفعل!");
+                return;
             }
 
-            // تسجيل الدكتور في قائمة التقييمات الخاصة بالمستخدم
-            saveUserRatedDoctor(normalizedName);
+            // إضافة الدكتور إلى قاعدة البيانات
+            doctorsRef.child(normalizedName).set({
+                name: doctorName,
+                rating: currentRating,
+            });
 
             showMessage(successMsg, "تم التقييم بنجاح!");
             doctorNameInput.value = "";
