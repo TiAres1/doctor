@@ -27,12 +27,11 @@ const successMsg = document.getElementById("success-msg");
 
 let currentRating = 0;
 
-// توحيد النصوص
 function normalizeText(text) {
     return text
         .replace(/أ|إ|آ/g, "ا") // استبدال جميع أنواع الهمزات بـ "ا"
         .replace(/ة/g, "ه") // استبدال التاء المربوطة بـ "ه"
-        .replace(/[^a-zA-Z0-9\u0600-\u06FF\s]/g, "") // إزالة الأحرف المحظورة (., #, $, [, ])
+        .replace(/[.#$[\]]/g, "") // إزالة الأحرف المحظورة: ., #, $, [, ]
         .replace(/\s+/g, " ") // إزالة المسافات الزائدة
         .trim() // إزالة المسافات في البداية والنهاية
         .toLowerCase(); // تحويل النص إلى أحرف صغيرة
@@ -158,7 +157,7 @@ function updateTopDoctors() {
         topDoctorsList.innerHTML = "";
         sortedDoctors.forEach((doctor) => {
             const li = document.createElement("li");
-            li.innerHTML = `<span class="star">★</span> ${doctor.name} - ${doctor.average.toFixed(1)} (${doctor.count} تقييم)`;
+            li.innerHTML = `<span class="star">★</span> ${doctor.name}`;
             topDoctorsList.appendChild(li);
         });
     });
