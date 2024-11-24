@@ -96,9 +96,35 @@ button:hover {
 }
 
 .messages {
+    font-size: 15px;
     margin-top: 20px;
     text-align: center;
 }
+
+.messages #error-msg {
+    color: red;
+    display: block;
+    background: rgb(255, 132, 132);
+    border: 1px solid #f00;
+    width: 19em;
+    border-radius: 30px;
+    padding: 5px;
+    margin-right: 1.5em;
+    margin-top: 4em;
+}
+
+.messages #success-msg {
+    color: #adff2f;
+    display: block;
+    background: #d1ff8c;
+    border: 1px solid #adff2f;
+    width: 19em;
+    border-radius: 30px;
+    padding: 5px;
+    margin-right: 1.5em;
+    margin-top: 4em;
+}
+
 
 h2 {
     font-size: 20px;
