@@ -80,19 +80,19 @@ button:hover {
 .stars-container {
     margin: 15px 0;
     font-size: 24px;
-    color: #6c27d6; /* تغيير لون الحواف */
+    color: #6c27d6;
     direction: rtl;
 }
 
 .star {
     cursor: pointer;
     font-size: 24px;
-    color: #6c27d6; /* لون النجمة الممتلئة */
+    color: #6c27d6;
     transition: color 0.3s ease;
 }
 
 .star.filled {
-    color: #6c27d6; /* لون النجمة عند التحديد */
+    color: #6c27d6;
 }
 
 .messages {
@@ -155,7 +155,7 @@ ul li .star {
 }
 
 .thanks {
-    position: relative; /* تثبيت مكانها حسب الصورة */
+    position: relative;
     top: 29px;
     left: 8.5em;
     font-size: 16px;
