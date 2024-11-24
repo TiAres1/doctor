@@ -89,24 +89,39 @@ function syncLocalStorageWithFirebase() {
     });
 }
 
-
 submitButton.addEventListener("click", () => {
     const doctorNameInputValue = doctorNameInput.value.trim();
     const arabicRegex = /^[\u0600-\u06FF\s]+$/;
 
+    // التحقق من أن الإدخال باللغة العربية فقط
     if (!arabicRegex.test(doctorNameInputValue)) {
         showMessage(errorMsg, "الرجاء كتابة اسم الدكتور باللغة العربية فقط!");
         return;
     }
 
-    const doctorName = doctorNameInputValue.startsWith("د.")
-        ? doctorNameInputValue
-        : `د. ${doctorNameInputValue}`;
+    // تنظيف الاسم من الألقاب المكررة مثل "الدكتور" أو "د." أو "د د"
+    const filteredName = doctorNameInputValue
+        .replace(/(^|\s)(الدكتور|دكتور|د\.?|دك\.?|دكت|ألدكتور|الدكت|دكتوراه|دكاتره|د\s?د)\s?/gi, " ") // إزالة جميع الألقاب المكررة
+        .replace(/(\s+)/g, " ") // إزالة المسافات الزائدة
+        .trim(); // إزالة المسافات الزائدة
 
+    // التحقق من وجود اسمين على الأقل
+    const nameParts = filteredName.split(/\s+/);
+    if (nameParts.length < 2) {
+        showMessage(errorMsg, "الرجاء كتابة اسمين على الأقل بدون لقب!");
+        return;
+    }
+
+    // إضافة "د." فقط إذا لم تكن موجودة
+    const doctorName = `د. ${filteredName}`;
+
+    // تطبيع النص لجعله صالحًا
     const normalizedName = normalizeText(doctorName);
 
+    // مزامنة LocalStorage مع Firebase
     syncLocalStorageWithFirebase();
 
+    // التحقق إذا قام المستخدم بتقييم الدكتور مسبقًا
     if (hasUserRatedDoctor(normalizedName)) {
         showMessage(errorMsg, "لقد قمت بتقييم هذا الدكتور سابقًا!");
         return;
@@ -117,6 +132,7 @@ submitButton.addEventListener("click", () => {
             const doctorData = snapshot.val();
 
             if (doctorData) {
+                // تحديث بيانات الدكتور إذا كان موجودًا
                 const newCount = doctorData.count + 1;
                 const newTotal = doctorData.total + currentRating;
                 const newAverage = newTotal / newCount;
@@ -127,18 +143,22 @@ submitButton.addEventListener("click", () => {
                     average: newAverage,
                 });
             } else {
+                // إضافة دكتور جديد
                 doctorsRef.child(normalizedName).set({
-                    name: doctorName,
+                    name: filteredName, // حفظ الاسم بدون تكرار الألقاب
                     count: 1,
                     total: currentRating,
                     average: currentRating,
                 });
             }
 
+            // تسجيل الدكتور في LocalStorage
             saveUserRatedDoctor(normalizedName);
 
+            // تحديث القائمة بعد الإضافة
             updateTopDoctors();
 
+            // رسالة نجاح
             showMessage(successMsg, "تم التقييم بنجاح!");
             doctorNameInput.value = "";
             stars.forEach((star) => {
@@ -152,25 +172,28 @@ submitButton.addEventListener("click", () => {
     }
 });
 
+
 function updateTopDoctors() {
     doctorsRef.on("value", (snapshot) => {
         const doctors = snapshot.val() || {};
 
+        // ترتيب الدكاترة حسب متوسط التقييم ثم عدد التقييمات
         const sortedDoctors = Object.values(doctors)
             .sort((a, b) => {
                 if (b.average === a.average) {
-                    return b.count - a.count;
+                    return b.count - a.count; // إذا كانت المتوسطات متساوية، استخدم عدد التقييمات
                 }
-                return b.average - a.average;
+                return b.average - a.average; // ترتيب تنازلي حسب المتوسط
             })
-            .slice(0, 3);
+            .slice(0, 3); // عرض أفضل 3 دكاترة
 
-
+        // إعادة تعيين القائمة
         topDoctorsList.innerHTML = "";
 
+        // إضافة الدكاترة إلى القائمة
         sortedDoctors.forEach((doctor) => {
             const li = document.createElement("li");
-            li.innerHTML = `<span class="star">★</span> ${doctor.name}`;
+            li.innerHTML = `<span class="star">★</span> د. ${doctor.name}`; // عرض الاسم مع "د."
             topDoctorsList.appendChild(li);
         });
     });
