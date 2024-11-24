@@ -17,6 +17,47 @@ function normalizeText(text) {
         .toLowerCase(); // تحويل النص إلى أحرف صغيرة
 }
 
+// جلب البيانات من LocalStorage
+function readData() {
+    const data = localStorage.getItem("doctors");
+    return data ? JSON.parse(data) : [];
+}
+
+// حفظ البيانات إلى LocalStorage
+function writeData(data) {
+    localStorage.setItem("doctors", JSON.stringify(data));
+}
+
+// منع التكرار
+function isDuplicate(doctors, name) {
+    const normalizedName = normalizeText(name);
+    return doctors.some((doctor) => normalizeText(doctor.name) === normalizedName);
+}
+
+// تحديث قائمة أفضل الدكاترة
+function updateTopDoctors() {
+    const doctors = readData();
+    const topDoctors = doctors
+        .sort((a, b) => b.rating - a.rating)
+        .slice(0, 3);
+
+    topDoctorsList.innerHTML = "";
+    topDoctors.forEach((doctor) => {
+        const li = document.createElement("li");
+        li.innerHTML = `<span class="star">★</span> ${doctor.name}`;
+        topDoctorsList.appendChild(li);
+    });
+}
+
+// عرض رسالة
+function showMessage(element, message) {
+    element.textContent = message;
+    element.style.display = "block";
+    setTimeout(() => {
+        element.style.display = "none";
+    }, 3000);
+}
+
 // تفعيل التقييم بالنجوم
 stars.forEach((star) => {
     star.addEventListener("click", () => {
@@ -54,60 +95,28 @@ submitButton.addEventListener("click", () => {
         ? doctorNameInputValue
         : `د. ${doctorNameInputValue}`;
 
+    const doctors = readData();
+
+    if (isDuplicate(doctors, doctorName)) {
+        showMessage(errorMsg, "هذا الدكتور تم تقييمه بالفعل!");
+        return;
+    }
+
     if (currentRating > 0) {
-        fetch("/add-rating", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name: doctorName, rating: currentRating }),
-        })
-            .then((response) => {
-                if (response.status === 409) {
-                    throw new Error("هذا الدكتور تم تقييمه بالفعل!");
-                }
-                return response.json();
-            })
-            .then((data) => {
-                if (data.success) {
-                    showMessage(successMsg, "تم التقييم بنجاح!");
-                    updateTopDoctors();
-                    doctorNameInput.value = "";
-                    stars.forEach((star) => {
-                        star.textContent = "☆";
-                        star.classList.remove("filled");
-                    });
-                    currentRating = 0;
-                }
-            })
-            .catch((err) => {
-                showMessage(errorMsg, err.message || "حدث خطأ أثناء حفظ التقييم!");
-            });
+        doctors.push({ name: doctorName, rating: currentRating });
+        writeData(doctors);
+        showMessage(successMsg, "تم التقييم بنجاح!");
+        updateTopDoctors();
+        doctorNameInput.value = "";
+        stars.forEach((star) => {
+            star.textContent = "☆";
+            star.classList.remove("filled");
+        });
+        currentRating = 0;
     } else {
         showMessage(errorMsg, "الرجاء اختيار التقييم!");
     }
 });
-
-// تحديث قائمة أفضل الدكاترة
-function updateTopDoctors() {
-    fetch("/top-doctors")
-        .then((response) => response.json())
-        .then((data) => {
-            topDoctorsList.innerHTML = "";
-            data.forEach((doctor) => {
-                const li = document.createElement("li");
-                li.innerHTML = `<span class="star">★</span> ${doctor.name}`;
-                topDoctorsList.appendChild(li);
-            });
-        });
-}
-
-// عرض رسالة
-function showMessage(element, message) {
-    element.textContent = message;
-    element.style.display = "block";
-    setTimeout(() => {
-        element.style.display = "none";
-    }, 3000);
-}
 
 // تحديث القائمة عند بدء التشغيل
 updateTopDoctors();
