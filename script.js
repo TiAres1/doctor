@@ -145,7 +145,7 @@ function updateTopDoctors() {
         const doctors = snapshot.val() || {};
         const sortedDoctors = Object.values(doctors)
             .sort((a, b) => b.average - a.average) // ترتيب تنازلي حسب المتوسط
-            .reverse()
+            // .reverse()
             .slice(0, 3); // عرض أفضل 3 دكاترة
 
         topDoctorsList.innerHTML = "";
