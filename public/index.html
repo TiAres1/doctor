@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقييم الدكاترة</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>تقييم الدكاترة!</h1>
+        <hr class="fir-hr">
+        <div class="input-container">
+            <input type="text" id="doctor-name" placeholder="اسم الدكتور">
+            <button id="submit-btn">✔</button>
+        </div>
+        <div class="stars-container">
+            <span class="star" data-value="1">☆</span>
+            <span class="star" data-value="2">☆</span>
+            <span class="star" data-value="3">☆</span>
+            <span class="star" data-value="4">☆</span>
+            <span class="star" data-value="5">☆</span>
+        </div>
+        <hr class="sec-hr">
+        <h2>أفضل الدكاترة</h2>
+        <ul id="top-doctors"></ul>
+        <p class="thanks">شكرًا لكم ♥</p>
+        <div class="messages">
+            <p id="error-msg" style="color: red; display: none;">الرجاء كتابة اسم الدكتور باللغة العربية فقط!</p>
+            <p id="success-msg" style="color: green; display: none;">تم التقييم بنجاح!</p>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

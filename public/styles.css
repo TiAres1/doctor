@@ -1,0 +1,139 @@
+body {
+    font-family: 'Arial', sans-serif;
+    text-align: center;
+    direction: rtl;
+    background: linear-gradient(to right, #7d58ed, #53c3f9);
+    margin: 0;
+    padding: 20px;
+    color: #6c27d6;
+    font-family: myFirstFont;
+}
+
+@font-face {
+    font-family: myFirstFont;
+    src: url('./Droid-Naskh-Regular.ttf');
+}
+
+.container {
+    max-width: 400px;
+    margin: auto;
+    padding: 20px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    font-size: 20px;
+    margin-bottom: 15px;
+    color: #6c27d6;
+}
+
+.fir-hr {
+    border: none;
+    border-top: 2px solid #6c27d6;
+    margin-bottom: 3em;
+    margin-top: 20px;
+}
+
+.sec-hr {
+    border: none;
+    border-top: 2px solid #6c27d6;
+    margin-top: 2.5em;
+}
+
+.input-container {
+    margin-bottom: -10px;
+    position: relative;
+}
+
+input {
+    width: 60%;
+    padding: 9px;
+    border: 1px solid #6c27d6;
+    border-radius: 20px;
+    font-size: 12px;
+    outline: none;
+    text-align: right;
+    color: white;
+    background: #6c27d6;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+button {
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 50%;
+    background: #6c27d6;
+    color: white;
+    font-size: 18px;
+    /* margin-left: -20px; */
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+button:hover {
+    background: #4b19a1;
+}
+
+.stars-container {
+    margin: 15px 0;
+    font-size: 24px;
+    color: #6c27d6; /* تغيير لون الحواف */
+    direction: rtl;
+}
+
+.star {
+    cursor: pointer;
+    font-size: 24px;
+    color: #6c27d6; /* لون النجمة الممتلئة */
+    transition: color 0.3s ease;
+}
+
+.star.filled {
+    color: #6c27d6; /* لون النجمة عند التحديد */
+}
+
+.messages {
+    margin-top: 20px;
+    text-align: center;
+}
+
+h2 {
+    font-size: 20px;
+    margin-top: 20px;
+    color: #6c27d6;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+    text-align: center;
+    color: #6c27d6;
+}
+
+ul li {
+    font-size: 18px;
+    margin: 5px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+ul li .star {
+    font-size: 20px;
+    color: #6c27d6;
+    margin-left: 10px;
+    display: contents;
+}
+
+.thanks {
+    position: relative; /* تثبيت مكانها حسب الصورة */
+    top: 29px;
+    left: 8.5em;
+    font-size: 16px;
+    color: #6c27d6;
+    font-weight: bold;
+    text-align: center;
+}
